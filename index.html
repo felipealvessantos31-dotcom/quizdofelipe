@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Code - Show do Milhão (Felipe)</title>
+    <!-- Importação do arquivo de estilos externo criado acima -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="editor-container">
+    <div class="tabs-bar">
+        <div class="tab">
+            <span class="tab-icon">JS</span> showDoMilhao.js
+        </div>
+    </div>
+
+    <div class="code-area">
+        <div class="line-numbers">
+            1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20
+        </div>
+
+        <div class="terminal-output">
+            <!-- Seu nome obrigatoriamente no início -->
+            <div class="comment">// SISTEMA DESENVOLVIDO POR: FELIPE</div>
+            <div class="game-title">=== BEM-VINDO AO SHOW DO MILHÃO ===</div>
+
+            <!-- TELA 1: LOGIN -->
+            <div id="screen-welcome" class="screen active">
+                <div class="string"># Insira seu identificador de jogador para compilar:</div>
+                <div class="input-group">
+                    <input type="text" id="player-name" class="input-name" placeholder="Nome do jogador..." autocomplete="off">
+                    <button class="btn-action" onclick="iniciarJogo()">Compilar & Iniciar</button>
+                </div>
+            </div>
+
+            <!-- TELA 2: ARENA DO JOGO -->
+            <div id="screen-game" class="screen">
+                <div id="prize-indicator" class="keyword"></div>
+                <div id="question-text" class="question-box"></div>
+                <div id="options-container" class="options-grid"></div>
+                <div id="feedback" class="string" style="margin-top: 20px; font-weight: bold; font-size: 18px;"></div>
+            </div>
+
+            <!-- TELA 3: PAINEL DE PONTUAÇÃO SHOW DO MILHÃO -->
+            <div id="screen-result" class="screen">
+                <div class="show-milhao-panel">
+                    <h2>Resultado Final</h2>
+                    <p class="string" id="resultado-jogador" style="font-size: 18px;"></p>
+                    <!-- Formato solicitado: você ganhou X reais -->
+                    <div class="score-destaque" id="placar-final">você ganhou 0 reais</div>
+                    <button class="btn-action" onclick="reiniciarJogo()">Jogar Novamente</button>
+                </div>
+            </div>
+
+            <!-- Seu nome obrigatoriamente no final -->
+            <div class="comment" style="margin-top: auto; padding-top: 40px;">// DESENVOLVEDOR CLIENTE: FELIPE</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const premios = {
+        1: "1 mil reais", 
+        2: "2 mil reais",
+        3: "3 mil reais",
+        4: "4 mil reais", 
+        5: "5 mil reais", 
+        6: "10 mil reais",
+        7: "20 mil reais", 
+        8: "30 mil reais", 
+        9: "40 mil reais",
+        10: "50 mil reais", 
+        11: "100 mil reais", 
+        12: "200 mil reais",
+        13: "300 mil reais", 
+        14: "400 mil reais", 
+        15: "500 mil reais",
+        16: "1 MILHÃO DE REAIS!"
+    };
+
+    const perguntas = [
+        {
+            pergunta: "Qual é a capital do Brasil?",
+            opcoes: ["A) Rio de Janeiro", "B) São Paulo", "C) Brasília", "D) Salvador"],
+            correta: "C"
+        },
+        {
+            pergunta: "Quantos dias tem um ano bissexto?",
+            opcoes: ["A) 364", "B) 365", "C) 366", "D) 367"],
+            correta: "C"
+        },
+        {
+            pergunta: "Qual planeta é conhecido como o Planeta Vermelho?",
+            opcoes: ["A) Marte", "B) Júpiter", "C) Saturno", "D) Vênus"],
+            correta: "A"
+        }
+    ];
+
+    let nomeJogador = "";
+    let indicePergunta = 0;
+    let premioAtual = "0 reais";
+    let bloqueiaClique = false;
+
+    function alternarTela(idTela) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(idTela).classList.add('active');
+    }
+
+    function iniciarJogo() {
+        const input = document.getElementById("player-name");
+        nomeJogador = input.value.trim();
+
+        if (nomeJogador === "") {
+            alert("Por favor, digite seu nome antes de iniciar!");
+            return;
+        }
+
+        alternarTela("screen-game");
+        indicePergunta = 0;
+        premioAtual = "0 reais";
+        bloqueiaClique = false;
+        carregarPergunta();
+    }
+
+    function carregarPergunta() {
+        const feedback = document.getElementById("feedback");
+        feedback.innerText = "";
+        bloqueiaClique = false;
+        
+        if (indicePergunta >= perguntas.length) {
+            finalizarJogo(true);
+            return;
+        }
+
+        const p = perguntas[indicePergunta];
+        const numeroPergunta = indicePergunta + 1;
+
+        document.getElementById("prize-indicator").innerText = `[PROCESSO] Questão atual valendo: ${premios[numeroPergunta]}`;
+        document.getElementById("question-text").innerText = `${numeroPergunta}. ${p.pergunta}`;
+        
+        const container = document.getElementById("options-container");
+        container.innerHTML = "";
+
+        p.opcoes.forEach(opcao => {
+            const botao = document.createElement("button");
+            botao.className = "btn-option";
+            botao.innerText = opcao;
+            botao.onclick = () => {
+                if (!bloqueiaClique) verificarResposta(opcao.trim().charAt(0));
+            };
+            container.appendChild(botao);
+        });
+    }
+
+    function verificarResposta(alternativaEscolhida) {
+        bloqueiaClique = true; 
+        const p = perguntas[indicePergunta];
+        const feedback = document.getElementById("feedback");
+        
+        if (alternativaEscolhida === p.correta) {
+            premioAtual = premios[indicePergunta + 1];
+            feedback.style.color = "#4bb543"; 
+            feedback.innerText = `🎉 Excelente! Você garantiu: ${premioAtual}`;
+            
+            setTimeout(() => {
+                indicePergunta++;
+                carregarPergunta();
+            }, 1400);
+        } else {
+            feedback.style.color = "#f44747";
+            feedback.innerText = `❌ Resposta incorreta. O sistema esperava a alternativa ${p.correta}.`;
+            setTimeout(() => {
+                finalizarJogo(false);
+            }, 1400);
+        }
+    }
+
+    function finalizarJogo(ganhouTudo) {
+        alternarTela("screen-result");
+        const resultadoJogadorText = document.getElementById("resultado-jogador");
+        
+        if (ganhouTudo) {
+            resultadoJogadorText.innerText = `Fantástico, ${nomeJogador}! Você concluiu o script com sucesso máximo!`;
+        } else {
+            resultadoJogadorText.innerText = `Fim de transmissão para ${nomeJogador}. Seu algoritmo falhou em tempo de execução.`;
+        }
+
+        document.getElementById("placar-final").innerHTML = `você ganhou ${premioAtual}`;
+    }
+
+    function reiniciarJogo() {
+        document.getElementById("player-name").value = "";
+        alternarTela("screen-welcome");
+    }
+</script>
+
+</body>
+</html>
